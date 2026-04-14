@@ -22,7 +22,11 @@ class BoundedCounter:
         max_value (int): максимальное допустимое значение (включительно).
         initial_value (int, optional): начальное значение. Если не указано,
             устанавливается в min_value.
+    """
 
+    def __init__(self, min_value: int, max_value: int, initial_value: int = None):
+        """
+        
     >>> _ = BoundedCounter(-2, 10)
     >>> _ = BoundedCounter(-123, 5869, 123)
 
@@ -49,10 +53,7 @@ class BoundedCounter:
     >>> _ = BoundedCounter("lol", b"kek", [1, 9, 8, 4], (34, 69))
     Traceback (most recent call last):
     ...
-    TypeError: BoundedCounter.__init__() takes from 3 to 4 positional arguments but 5 were given
-    """
-
-    def __init__(self, min_value: int, max_value: int, initial_value: int = None):
+    TypeError: BoundedCounter.__init__() takes from 3 to 4 positional arguments but 5 were given"""
         if min_value > max_value:
             raise ValueError("min_value must be <= max_value")
         self._min = min_value
