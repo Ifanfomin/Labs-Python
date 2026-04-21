@@ -115,10 +115,12 @@ def print_message(user, message):
         chat_history.append((user, message))
         if len(chat_history) > TERMINAL_SIZE[1] - 2:
             chat_history.pop(0)
-
-    sys.stdout.write("\033[2J\033[H")
+    
     sys.stdout.write("\033[2J\033[H")
     print(TERMINAL_HEADER)
+    if len(chat_history) < TERMINAL_SIZE[1] - 2:
+        sys.stdout.write("\n" * (TERMINAL_SIZE[1] - len(chat_history) - 2))
+
     for h_user, h_message in chat_history:
         print(h_user + ": " + h_message)
     print(">>> ", end = "")
