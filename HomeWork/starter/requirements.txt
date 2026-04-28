@@ -1,0 +1,4 @@
+psycopg[binary]>=3.2
+pymongo>=4.8
+motor>=3.6
+redis>=5.2
