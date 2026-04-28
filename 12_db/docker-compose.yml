@@ -1,0 +1,33 @@
+# version: "3.9"
+
+services:
+  # postgres:
+  #   image: postgres:16
+  #   container_name: lab_12_postgres
+  #   restart: unless-stopped
+  #   environment:
+  #     POSTGRES_HOST_AUTH_METHOD: trust
+  #   ports:
+  #     - "5432:5432"
+  #   volumes:
+  #     - ./postgres_data:/var/lib/postgresql/data
+
+  # mongodb:
+  #   image: mongo:7
+  #   container_name: lab_12_mongo
+  #   restart: unless-stopped
+  #   ports:
+  #     - "27017:27017"
+  #   volumes:
+  #     - ./mongo_data:/data/db
+
+  redis:
+    image: redis:7
+    container_name: lab_12_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+
+# volumes:
+#   postgres_data:
+#   mongo_data:
