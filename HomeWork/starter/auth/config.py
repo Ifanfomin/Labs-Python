@@ -16,9 +16,9 @@ class Settings:
         return cls(
             postgres_dsn=os.getenv(
                 "POSTGRES_DSN",
-                "postgresql://postgres:postgres@localhost:5432/homework_auth",
+                "postgresql://postgres:postgres@127.0.0.1:5432/homework_auth",
             ),
-            mongo_dsn=os.getenv("MONGO_DSN", "mongodb://localhost:27017"),
+            mongo_dsn=os.getenv("MONGO_DSN", "mongodb://127.0.0.1:27017"),
             mongo_db_name=os.getenv("MONGO_DB_NAME", "homework_auth"),
-            redis_dsn=os.getenv("REDIS_DSN", "redis://localhost:6379/0"),
+            redis_dsn=os.getenv("REDIS_DSN", "redis://127.0.0.1:6379/0"),
         )
