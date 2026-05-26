@@ -39,11 +39,9 @@ async def wait_for_password(session, task_id, algorithm):
             return algorithm, data["password"]
 
         if data["err"]["code"] == 1001:
-            print(f"{algorithm}: task is still running...")
+            print(f"{algorithm}: задача в процессе...")
             await asyncio.sleep(1)
             continue
-
-        raise Exception(data["err"])
 
 
 async def main():
@@ -76,7 +74,7 @@ async def main():
 
         results = await asyncio.gather(*result_tasks)
 
-        print("\nPasswords:\n")
+        print("Пароли:")
 
         for algorithm, password in results:
             print(f"{algorithm}: {password}")

@@ -1,14 +1,13 @@
 from aiohttp import web
 import asyncio
-from itertools import count
+import random
 
 from hident import long_solve_hash, identify_hashes
 
 
 routes = web.RouteTableDef()
 
-tasks = {}
-task_counter = count(1)
+tasks: dict[int, asyncio.Task] = {}
 
 ERR_TASK_NOT_FOUND = {
     "code": 1000,
@@ -20,7 +19,6 @@ ERR_TASK_NOT_FINISHED = {
     "message": "task not finished"
 }
 
-
 @routes.get('/define/{hash}')
 async def define(request: web.Request) -> web.Response:
     input_hash = request.match_info['hash']
@@ -31,11 +29,6 @@ async def define(request: web.Request) -> web.Response:
         "algs": algorithms
     })
 
-
-async def solve_task(input_hash: str, algorithm: str):
-    return await long_solve_hash(input_hash, algorithm)
-
-
 @routes.get('/createSolveTask')
 async def create_solve_task(request: web.Request) -> web.Response:
     input_hash = request.query.get("hash")
@@ -43,33 +36,32 @@ async def create_solve_task(request: web.Request) -> web.Response:
 
     if not input_hash or not algorithm:
         return web.json_response(
-            {"error": "hash and algorithm are required"},
+            {"error": "необходимо указать hash и algorithm"},
             status=400
         )
-
-    task_id = next(task_counter)
+    
 
     task = asyncio.create_task(
-        solve_task(input_hash, algorithm)
+        long_solve_hash(input_hash, algorithm)
     )
 
+    task_id = random.randint(10000, 99999)
     tasks[task_id] = task
 
     return web.json_response({
         "taskId": task_id
     })
 
-
 @routes.get('/getPassword')
 async def get_password(request: web.Request) -> web.Response:
     task_id = request.query.get("taskId")
-
+    
     if not task_id:
-        return web.json_response(
-            {"error": "taskId is required"},
-            status=400
-        )
-
+        return web.json_response({
+            "password": None,
+            "err": ERR_TASK_NOT_FOUND
+        })
+    
     task_id = int(task_id)
 
     if task_id not in tasks:
@@ -79,30 +71,19 @@ async def get_password(request: web.Request) -> web.Response:
         })
 
     task = tasks[task_id]
-
+    
     if not task.done():
         return web.json_response({
             "password": None,
             "err": ERR_TASK_NOT_FINISHED
         })
 
-    try:
-        password = task.result()
+    password = task.result()
 
-        return web.json_response({
-            "password": password,
-            "err": None
-        })
-
-    except Exception as e:
-        return web.json_response({
-            "password": None,
-            "err": {
-                "code": 500,
-                "message": str(e)
-            }
-        })
-
+    return web.json_response({
+        "password": password,
+        "err": None
+    })
 
 if __name__ == "__main__":
     app = web.Application()

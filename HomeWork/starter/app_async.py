@@ -10,6 +10,7 @@ from auth.repositories import (
 
 async def main() -> None:
     settings = Settings.from_env()
+
     service = AsyncAccountCardService(
         accounts=AsyncPostgresAccountsRepository(settings),
         audit=AsyncMongoAuditRepository(settings),
@@ -17,19 +18,28 @@ async def main() -> None:
     )
 
     await service.reset()
+
     try:
-        first = await service.create_account("first@example.com")
-        second = await service.create_account("second@example.com")
+        first, second = await asyncio.gather(
+            service.create_account("first@example.com"),
+            service.create_account("second@example.com"),
+        )
 
-        await service.set_verification_code(first.id, ttl_seconds=60)
-        await service.set_verification_code(second.id, ttl_seconds=60)
+        await asyncio.gather(
+            service.set_verification_code(first.id, ttl_seconds=60),
+            service.set_verification_code(second.id, ttl_seconds=60),
+        )
 
-        first_card = await service.get_account_card(first.id)
-        second_card = await service.get_account_card(second.id)
-        
+        first_card, second_card = await asyncio.gather(
+            service.get_account_card(first.id),
+            service.get_account_card(second.id),
+        )
+
         assert first_card.has_active_code is True
         assert second_card.has_active_code is True
+
         print("async scenario is OK")
+
     finally:
         await service.reset()
 

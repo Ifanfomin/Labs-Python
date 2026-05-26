@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from random import randint
+import asyncio
 
 from auth.models import AccountCard
 from auth.protocols import (
@@ -44,17 +45,18 @@ class AsyncAccountCardService:
         code = str(randint(1000, 9999))
 
         # положить код в redis
-        await self.codes.set_code(
-            account_id,
-            code,
-            ttl_seconds,
-        )
-
-        # записать событие в mongodb
-        await self.audit.log_event(
-            account_id,
-            "verification_code_set",
-            {"code": code},
+        # записать в mongodb событие о генереции кода
+        await asyncio.gather(
+            self.codes.set_code(
+                account_id,
+                code,
+                ttl_seconds,
+            ),
+            self.audit.log_event(
+                account_id,
+                "verification_code_set",
+                {"code": code},
+            ),
         )
 
     async def get_account_card(self, account_id: int):
@@ -65,10 +67,11 @@ class AsyncAccountCardService:
             account_id = account.id
 
             # проверить наличие кода в redis
-            has_code = await self.codes.has_code(account_id)
-
             # получить события из mongodb
-            events = await self.audit.list_events(account_id)
+            has_code, events = await asyncio.gather(
+                self.codes.has_code(account_id),
+                self.audit.list_events(account_id),
+            )
 
             card = AccountCard(
                 account,
@@ -81,6 +84,8 @@ class AsyncAccountCardService:
         return card
 
     async def reset(self) -> None:
-        await self.accounts.clear()
-        await self.audit.clear()
-        await self.codes.clear()
+        await asyncio.gather(
+            self.accounts.clear(),
+            self.audit.clear(),
+            self.codes.clear(),
+        )
